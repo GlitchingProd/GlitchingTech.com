@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glitching | Tech</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Impact&family=Montserrat:wght@800;900&display=swap');
+
+    :root {
+      --bg-color: #525252;
+      --card-bg: #6b6b6b;
+      --card-hover: #787878;
+      --text-color: #ffffff;
+      --shadow-color: rgba(0, 0, 0, 0.6);
+      --highlight-orange: #ff6b00;
+      --highlight-orange-bright: #ff8800;
+      --transition-speed: 0.35s;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: 'Montserrat', 'Impact', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      perspective: 1200px;
+    }
+
+    /* --- TOP HEADER NAVIGATION --- */
+    header {
+      width: 100%;
+      padding: 30px 4% 15px 4%;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Left Navigation Group */
+    nav.nav-left {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 50px;
+      padding-right: 25px;
+    }
+
+    /* Right Navigation Group */
+    nav.nav-right {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 50px;
+      padding-left: 25px;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      color: #ffffff;
+      font-family: 'Impact', 'Montserrat', sans-serif;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-shadow: 2px 2px 4px var(--shadow-color);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                  color 0.25s ease, 
+                  text-shadow 0.25s ease,
+                  opacity 0.25s ease;
+      opacity: 0.85;
+      white-space: nowrap;
+      position: relative;
+      padding: 5px 10px;
+      transform-style: preserve-3d;
+    }
+
+    /* Hover Orange Highlight & Tactile Lift */
+    .nav-btn:hover {
+      opacity: 1;
+      color: var(--highlight-orange-bright);
+      transform: translateY(-3px) scale(1.06) rotateX(8deg);
+      text-shadow: 0 5px 15px rgba(255, 107, 0, 0.5);
+    }
+
+    .nav-btn:active {
+      transform: translateY(2px) scale(0.98) rotateX(-5deg);
+      transition: transform 0.08s ease;
+    }
+
+    .nav-btn.active {
+      opacity: 1;
+      color: #ffffff;
+      text-shadow: 3px 3px 8px #000000, 0 0 12px var(--highlight-orange);
+    }
+
+    .nav-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 10%;
+      width: 80%;
+      height: 3px;
+      background: var(--highlight-orange);
+      border-radius: 2px;
+      box-shadow: 0 0 10px var(--highlight-orange-bright);
+    }
+
+    /* Center Logo Container */
+    .logo-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .logo-container img {
+      height: 50px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(2px 2px 4px var(--shadow-color));
+      transition: transform var(--transition-speed) ease;
+      cursor: pointer;
+    }
+
+    .logo-container img:hover {
+      transform: scale(1.1) rotate(-2deg);
+    }
+
+    /* --- FULL VIEWPORT MAIN CONTENT --- */
+    main {
+      width: 100%;
+      flex: 1;
+      padding: 20px 4% 100px 4%;
+      display: grid;
+    }
+
+    .tab-content {
+      grid-area: 1 / 1;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transform: translateY(15px);
+      transition: opacity var(--transition-speed) cubic-bezier(0.25, 1, 0.5, 1), 
+                  transform var(--transition-speed) cubic-bezier(0.25, 1, 0.5, 1),
+                  visibility var(--transition-speed) cubic-bezier(0.25, 1, 0.5, 1);
+      width: 100%;
+    }
+
+    .tab-content.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateY(0);
+      z-index: 2;
+    }
+
+    /* --- FULL-WIDTH SETUP TAB GRID --- */
+    .setup-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 25px;
+      width: 100%;
+      align-items: stretch;
+      perspective: 1000px;
+    }
+
+    .setup-card {
+      background-color: var(--card-bg);
+      border-radius: 14px;
+      min-height: 380px;
+      padding: 25px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      transition: transform 0.15s ease-out, 
+                  background-color var(--transition-speed) ease,
+                  box-shadow 0.15s ease-out,
+                  border-color var(--transition-speed) ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Dynamic Holographic / Glare Overlay for Cards */
+    .setup-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.18) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .setup-card:hover::before {
+      opacity: 1;
+    }
+
+    .setup-card:hover {
+      background-color: var(--card-hover);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 107, 0, 0.2);
+      border-color: rgba(255, 107, 0, 0.4);
+    }
+
+    .setup-card .img-wrapper {
+      width: 100%;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transform: translateZ(20px);
+    }
+
+    .setup-card img {
+      max-width: 95%;
+      max-height: 95%;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgba(0,0,0,0.35));
+      transition: transform 0.3s ease;
+    }
+
+    .setup-card:hover img {
+      transform: scale(1.08) translateZ(30px);
+    }
+
+    .setup-card .info {
+      text-align: center;
+      width: 100%;
+      transform: translateZ(15px);
+    }
+
+    .setup-card .title {
+      font-family: 'Impact', 'Montserrat', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      line-height: 1.1;
+      color: #ffffff;
+      text-shadow: 1px 1px 3px var(--shadow-color);
+      margin-bottom: 6px;
+      transition: color 0.25s ease;
+    }
+
+    .setup-card:hover .title {
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(255, 107, 0, 0.6);
+    }
+
+    .setup-card .desc {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      color: #dddddd;
+      letter-spacing: 0.5px;
+    }
+
+    /* --- FULL-WIDTH WALLPAPERS TAB --- */
+    .wallpaper-section-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    .wallpaper-gallery {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 50px;
+      width: 100%;
+    }
+
+    .wallpaper-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      width: 100%;
+      max-width: 1000px;
+      perspective: 1000px;
+    }
+
+    .wallpaper-frame {
+      width: 100%;
+      height: 580px;
+      max-height: 65vh;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .wallpaper-frame::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.22) 0%, transparent 65%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .wallpaper-block:hover .wallpaper-frame::before {
+      opacity: 1;
+    }
+
+    .wallpaper-block:hover .wallpaper-frame {
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 107, 0, 0.3);
+    }
+
+    .wallpaper-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .wallpaper-block:hover .wallpaper-frame img {
+      transform: scale(1.03);
+    }
+
+    .wallpaper-title {
+      margin-top: 18px;
+      font-family: 'Impact', sans-serif;
+      font-size: 2.2rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      text-shadow: 2px 2px 4px var(--shadow-color);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      transition: color 0.25s ease;
+    }
+
+    .wallpaper-block:hover .wallpaper-title {
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(255, 107, 0, 0.6);
+    }
+
+    /* Orange Badge */
+    .wallpaper-title .badge {
+      color: var(--highlight-orange-bright);
+      text-shadow: 0 0 8px rgba(255, 107, 0, 0.5);
+    }
+
+    .placeholder-box {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #383838;
+      color: #aaaaaa;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 10px;
+    }
+
+    /* --- WALLPAPER COLLECTION MODAL VIEW --- */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 15, 15, 0.92);
+      backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+      overflow-y: auto;
+      padding: 40px 20px 100px 20px;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .modal-header {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .modal-title {
+      font-family: 'Impact', sans-serif;
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      color: #ffffff;
+      text-shadow: 0 0 15px rgba(255, 107, 0, 0.4);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .download-zip-btn {
+      background: linear-gradient(135deg, var(--highlight-orange-bright), var(--highlight-orange));
+      color: #ffffff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-family: 'Impact', sans-serif;
+      font-size: 1.3rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(255, 107, 0, 0.4);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .download-zip-btn:hover {
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 12px 28px rgba(255, 107, 0, 0.6);
+      filter: brightness(1.1);
+    }
+
+    .close-modal-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.25s ease, transform 0.25s ease;
+    }
+
+    .close-modal-btn:hover {
+      background: var(--highlight-orange);
+      border-color: var(--highlight-orange);
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    .modal-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 25px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .modal-card {
+      background: #2a2a2a;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: transform 0.3s ease, border-color 0.3s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--highlight-orange);
+    }
+
+    .modal-card-img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      background: #1e1e1e;
+    }
+
+    .modal-card-info {
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #222222;
+    }
+
+    .modal-card-name {
+      font-family: 'Impact', sans-serif;
+      font-size: 1.2rem;
+      letter-spacing: 0.8px;
+      color: #eeeeee;
+    }
+
+    .modal-card-dl {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.25s ease, color 0.25s ease;
+      text-decoration: none;
+    }
+
+    .modal-card-dl:hover {
+      background: var(--highlight-orange);
+      color: #ffffff;
+    }
+
+    /* --- BOTTOM AD BANNER SPACE --- */
+    footer.ad-banner-space {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 70px;
+      background-color: rgba(30, 30, 30, 0.95);
+      border-top: 2px solid #3f3f3f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      box-shadow: 0 -5px 15px rgba(0,0,0,0.4);
+    }
+
+    footer.ad-banner-space .ad-placeholder {
+      color: #888888;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER NAVIGATION -->
+  <header>
+    <nav class="nav-left">
+      <button class="nav-btn" onclick="switchTab('wallpapers', this)">WALLPAPERS</button>
+      <button class="nav-btn active" onclick="switchTab('setup', this)">SETUP</button>
+    </nav>
+
+    <div class="logo-container">
+      <img src="favicon.ico" alt="Logo">
+    </div>
+
+    <nav class="nav-right">
+      <button class="nav-btn" onclick="switchTab('about', this)">ABOUT ME</button>
+      <button class="nav-btn" onclick="switchTab('socials', this)">SOCIALS</button>
+    </nav>
+  </header>
+
+  <!-- MAIN FULL-SCREEN CONTAINER -->
+  <main>
+
+    <!-- SETUP TAB -->
+    <section id="setup" class="tab-content active">
+      <div id="setup-container" class="setup-grid"></div>
+    </section>
+
+    <!-- WALLPAPERS TAB -->
+    <section id="wallpapers" class="tab-content">
+      <div class="wallpaper-section-wrapper">
+        <div id="wallpaper-container" class="wallpaper-gallery"></div>
+      </div>
+    </section>
+
+    <!-- ABOUT ME TAB -->
+    <section id="about" class="tab-content">
+      <div style="text-align: center; padding: 60px 20px;">
+        <h2 style="font-family:'Impact'; font-size: 3rem;">ABOUT ME</h2>
+        <p style="margin-top: 15px; font-size: 1.2rem; color: #d0d0d0;">Welcome to my setup and wallpaper showcase.</p>
+      </div>
+    </section>
+
+    <!-- SOCIALS TAB -->
+    <section id="socials" class="tab-content">
+      <div style="text-align: center; padding: 60px 20px;">
+        <h2 style="font-family:'Impact'; font-size: 3rem;">SOCIALS</h2>
+        <p style="margin-top: 15px; font-size: 1.2rem; color: #d0d0d0;">Links and community profiles.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- WALLPAPER COLLECTION MODAL VIEW -->
+  <div id="wallpaper-modal" class="modal-overlay">
+    <div class="modal-header">
+      <div id="modal-title" class="modal-title">CHROMA PACK</div>
+      <div class="modal-actions">
+        <button id="modal-zip-btn" class="download-zip-btn">
+          ⚡ DOWNLOAD (.ZIP)
+        </button>
+        <button class="close-modal-btn" onclick="closeWallpaperModal()">✕</button>
+      </div>
+    </div>
+    <div id="modal-gallery-grid" class="modal-gallery-grid"></div>
+  </div>
+
+  <!-- BOTTOM AD SLOT -->
+  <footer class="ad-banner-space">
+    <div class="ad-placeholder">-- ADVERTISEMENT BANNER SPACE --</div>
+  </footer>
+
+  <script>
+    /* =========================================================
+       1. SETUP BLOCKS CONFIGURATION
+    ========================================================= */
+    const setupData = [
+      { name: "OP1 8K V2", Desc: "ENDGAME GEAR", Image: "images/mouse.png" },
+      { name: "ALLOY ORIGINS 65", Desc: "HYPERX", Image: "images/keyboard.png" },
+      { name: "AM8", Desc: "FIFINE", Image: "images/mic.png" },
+      { name: "D6", Desc: "FIFINE", Image: "images/streamdeck.png" },
+      { name: "STRIX OLED XG27AQDMESZ", Desc: "ROG", Image: "images/monitor.png" }
+    ];
+
+    /* =========================================================
+       2. WALLPAPER PACKS CONFIGURATION
+       - zipFile: specify path (e.g., 'chromapack/chroma.zip')
+       - items: list of individual wallpaper files in folder
+    ========================================================= */
+    const wallpaperPacks = [
+      { 
+        folder: "chromapack", 
+        title: "CHROMA PACK", 
+        badge: "FREE",
+        zipFile: "chromapack/chroma.zip",
+        items: [
+          { name: "Ash", file: "chromapack/Ash.png" },
+          { name: "Banana", file: "chromapack/Banana.png" },
+          { name: "Flame", file: "chromapack/Flame.png" },
+          { name: "Forest", file: "chromapack/Forest.png" },
+          { name: "Greyed", file: "chromapack/Greyed.png" },
+          { name: "Indigo", file: "chromapack/Indigo.png" },
+          { name: "Jade", file: "chromapack/Jade.png" },
+          { name: "Sea", file: "chromapack/Sea.png" },
+          { name: "Sky", file: "chromapack/Sky.png" },
+          { name: "Sunset", file: "chromapack/Sunset.png" }
+        ]
+      },
+      { 
+        folder: "chromapackdark", 
+        title: "CHROMA PACK DARK", 
+        badge: "FREE",
+        zipFile: "chromapackdark/chromadark.zip",
+        items: [
+          { name: "Bananight", file: "chromapackdark/Bananight.png" },
+          { name: "Beyond The Mist", file: "chromapackdark/Beyond The Mist.png" },
+          { name: "Dark Blaze", file: "chromapackdark/Dark Blaze.png" },
+          { name: "Deep Ocean", file: "chromapackdark/Deep Ocean.png" },
+          { name: "Lime Time", file: "chromapackdark/Lime Time.png" },
+          { name: "Midnight Forest", file: "chromapackdark/Midnight Forest.png" },
+          { name: "Nighttime Fog", file: "chromapackdark/Nighttime Fog.png" },
+          { name: "Orange Haze", file: "chromapackdark/Orange Haze.png" },
+          { name: "Reflowing River", file: "chromapackdark/Reflowing River.png" },
+          { name: "Rusted Copper", file: "chromapackdark/Rusted Copper.png" }
+        ]
+      }
+    ];
+
+    /* Render Setup Cards */
+    function renderSetupBlocks() {
+      const container = document.getElementById('setup-container');
+      container.innerHTML = '';
+
+      setupData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'setup-card3d setup-card';
+        card.innerHTML = `
+          <div class="img-wrapper">
+            <img src="${item.Image}" alt="${item.name}" onerror="handleImageError(this, '${item.Image}')">
+          </div>
+          <div class="info">
+            <div class="title">${item.name}</div>
+            <div class="desc">${item.Desc}</div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    /* Render Wallpaper Blocks */
+    function renderWallpaperBlocks() {
+      const container = document.getElementById('wallpaper-container');
+      container.innerHTML = '';
+
+      wallpaperPacks.forEach((pack, index) => {
+        const coverImage = `${pack.folder}/cover.png`;
+
+        const block = document.createElement('div');
+        block.className = 'wallpaper-block';
+        block.onclick = () => openWallpaperModal(index);
+
+        block.innerHTML = `
+          <div class="wallpaper-frame setup-card3d">
+            <img src="${coverImage}" alt="${pack.title}" onerror="handleImageError(this, '${coverImage}')">
+          </div>
+          <div class="wallpaper-title">
+            ${pack.title} - <span class="badge">${pack.badge}</span>
+          </div>
+        `;
+
+        container.appendChild(block);
+      });
+    }
+
+    /* Open Wallpaper Collection Modal View */
+    function openWallpaperModal(packIndex) {
+      const pack = wallpaperPacks[packIndex];
+      const modal = document.getElementById('wallpaper-modal');
+      const title = document.getElementById('modal-title');
+      const zipBtn = document.getElementById('modal-zip-btn');
+      const grid = document.getElementById('modal-gallery-grid');
+
+      title.innerText = pack.title;
+      zipBtn.onclick = () => triggerDownload(pack.zipFile);
+
+      grid.innerHTML = '';
+      pack.items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'modal-card';
+        card.innerHTML = `
+          <img src="${item.file}" class="modal-card-img" alt="${item.name}" onerror="handleImageError(this, '${item.file}')">
+          <div class="modal-card-info">
+            <div class="modal-card-name">${item.name}</div>
+            <button class="modal-card-dl" onclick="triggerDownload('${item.file}')">DOWNLOAD</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      modal.classList.add('active');
+    }
+
+    function closeWallpaperModal() {
+      document.getElementById('wallpaper-modal').classList.remove('active');
+    }
+
+    function triggerDownload(fileUrl) {
+      const fileName = fileUrl.split('/').pop();
+
+      fetch(fileUrl)
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.blob();
+        })
+        .then(blob => {
+          const blobUrl = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = blobUrl;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(blobUrl);
+        })
+        .catch(() => {
+          // Direct link fallback without replacing destination image/showing cover
+          const link = document.createElement('a');
+          link.href = fileUrl;
+          link.download = fileName;
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+    }
+
+    function handleImageError(imgElem, path) {
+      const wrapper = imgElem.parentElement;
+      wrapper.innerHTML = `<div class="placeholder-box">Missing file:<br><b>${path}</b></div>`;
+    }
+
+    /* =========================================================
+       3. TAB SWITCHING
+    ========================================================= */
+    function switchTab(tabId, btnElem) {
+      const allButtons = document.querySelectorAll('.nav-btn');
+      const allTabs = document.querySelectorAll('.tab-content');
+
+      allButtons.forEach(btn => btn.classList.remove('active'));
+      btnElem.classList.add('active');
+
+      allTabs.forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      const activeTab = document.getElementById(tabId);
+      activeTab.classList.add('active');
+    }
+
+    /* =========================================================
+       4. INTERACTIVE 3D TILT & GLARE EFFECT ENGINE
+    ========================================================= */
+    function init3DTiltEffect() {
+      document.addEventListener('mousemove', (e) => {
+        const cards = document.querySelectorAll('.setup-card3d');
+        cards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          if (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+          ) {
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = ((y - centerY) / centerY) * -12;
+            const rotateY = ((x - centerX) / centerX) * 12;
+
+            card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+            card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
+            card.style.setProperty('--mouse-y', `${(y / rect.height) * 100}%`);
+          } else {
+            card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+          }
+        });
+      });
+    }
+
+    // Initialize Page
+    window.addEventListener('DOMContentLoaded', () => {
+      renderSetupBlocks();
+      renderWallpaperBlocks();
+      init3DTiltEffect();
+    });
+  </script>
+</body>
+</html>
